@@ -1,4 +1,5 @@
 import * as BABYLON from "babylonjs";
+import * as THREE from "three";
 import "babylonjs-loaders";
 // import Omnitone from "../build/omnitone.min.esm";
 import img from "./../assets/textures/amiga.jpg";
@@ -8,8 +9,25 @@ import THREEDwav from "./../assets/3DWAV.wav";
 import vertShader from "./../shaders/shader.vert";
 import fragShader from "./../shaders/shader.frag";
 console.log(img);
+
 export default class Game {
   constructor(canvasId) {
+    this.lastMatrixUpdate = 0;
+    this.updateAngles = (xAngle, yAngle, zAngle, camera) => {
+      let deg2rad = Math.PI / 180;
+      let euler = new THREE.Euler(
+        xAngle * deg2rad,
+        yAngle * deg2rad,
+        zAngle * deg2rad,
+        "YXZ"
+      );
+      let matrix = new THREE.Matrix4().makeRotationFromEuler(euler);
+      console.log(camera);
+
+      // if (Date.now() - this.lastMatrixUpdate > 100) {
+      this.FOH.setListenerFromMatrix(camera._camMatrix);
+      // }
+    };
     this.canvas = document.getElementById(canvasId);
     this.engine = new BABYLON.Engine(this.canvas, true);
     this.scene = new BABYLON.Scene(this.engine);
@@ -25,6 +43,8 @@ export default class Game {
       // channels to the ACN format.
       channelMap: [0, 3, 1, 2],
     });
+    this.ROH = Omnitone.createFOARotator(this.audioCtx);
+    console.log(this.ROH);
     this.mainTexture = new BABYLON.Texture(img, this.scene);
   }
 
@@ -58,7 +78,7 @@ export default class Game {
     console.log(this.scene);
     console.log(Omnitone);
     console.log(this.FOH);
-    this.FOH.setRotationMatrixFromCamera(this.camera);
+    // this.FOH.setListenerFromMatrix(this.camera);
 
     this.light = new BABYLON.HemisphericLight(
       "light1",
@@ -110,12 +130,15 @@ export default class Game {
   doRender() {
     this.engine.runRenderLoop(() => {
       const shaderMaterial = this.scene.getMaterialByName("shader");
+      const camera = this.scene.getCameraByName("camera1");
       shaderMaterial.setFloat("time", this.time);
       this.time += 0.02;
       // this.FOH.setRotationMatrixFromCamera(this.camera);
-      console.log(this.FOH);
-      console.log(this.camera);
+      // console.log(this.ROH);
+      // console.log(this.FOH);
+      //console.log(camera);
       // this.FOH.tempMatrix
+      // this.updateAngles(this.time, this.time, this.time, camera);
       shaderMaterial.setVector3(
         "cameraPosition",
         this.scene.activeCamera.position
