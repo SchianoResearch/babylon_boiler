@@ -1,6 +1,6 @@
-# Babylon.js boilerplate
+# Babylon.js boilerplate with Omnitone for Foa Ambisonic Renderer
 
-Support ES6, babel, eslint,dev live reload server, prod compression
+Support, live GLSL shader reload, ES6, babel, eslint,dev live reload server, prod compression, First order Ambisionics (so far)
 
 ## Usage
 

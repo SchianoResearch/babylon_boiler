@@ -32,5 +32,6 @@ void main(void) {
     float specComp = max(0., dot(vNormalW, angleW));
     specComp = pow(specComp, max(1., 64.)) * 2.;
 
-    gl_FragColor = vec4(color*vNormal * ndl + vec3(specComp), 1.);
+    //gl_FragColor = vec4(color*vNormal * ndl + vec3(specComp), 1.);
+    gl_FragColor = vec4(vNormal*0.5*color + 0.5, 1.);
 }

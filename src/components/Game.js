@@ -1,26 +1,65 @@
 import * as BABYLON from "babylonjs";
 import "babylonjs-loaders";
+// import Omnitone from "../build/omnitone.min.esm";
 import img from "./../assets/textures/amiga.jpg";
+// import dirt from "./../assets/textures/dirt.jpg";
+//import wav from "./../assets/road_break_feedback000.mp3";
+import THREEDwav from "./../assets/3DWAV.wav";
 import vertShader from "./../shaders/shader.vert";
 import fragShader from "./../shaders/shader.frag";
-
+console.log(img);
 export default class Game {
   constructor(canvasId) {
     this.canvas = document.getElementById(canvasId);
     this.engine = new BABYLON.Engine(this.canvas, true);
-    this.time = 0;
-  }
-
-  createScene() {
     this.scene = new BABYLON.Scene(this.engine);
-
     this.camera = new BABYLON.FreeCamera(
       "camera1",
       new BABYLON.Vector3(0, 5, -10),
       this.scene
     );
+    this.time = 0;
+    this.audioCtx = new AudioContext();
+    this.FOH = Omnitone.createFOARenderer(this.audioCtx, {
+      // The example audio is in the FuMa ordering (W,X,Y,Z). So remap the
+      // channels to the ACN format.
+      channelMap: [0, 3, 1, 2],
+    });
+    this.mainTexture = new BABYLON.Texture(img, this.scene);
+  }
+
+  createScene() {
+    console.log(this.FOH);
+    this.FOH.initialize();
+
+    let audioElement = document.createElement("audio");
+
+    audioElement.src = THREEDwav;
+
+    // console.log(audioElement);
+    // console.log(wav);
+    const audioElementSource =
+      this.audioCtx.createMediaElementSource(audioElement);
+
+    audioElementSource.connect(this.FOH.input);
+    this.FOH.output.connect(this.audioCtx.destination);
+
+    let someButton = document.getElementById("somebutton");
+
+    someButton.addEventListener("click", () => {
+      this.audioCtx.resume();
+      audioElement.play();
+    });
+
     this.camera.setTarget(BABYLON.Vector3.Zero());
     this.camera.attachControl(this.canvas, false);
+
+    // this.camera.cameraRotation.y = Math.PI / 2;
+    console.log(this.scene);
+    console.log(Omnitone);
+    console.log(this.FOH);
+    this.FOH.setRotationMatrixFromCamera(this.camera);
+
     this.light = new BABYLON.HemisphericLight(
       "light1",
       new BABYLON.Vector3(0, 1, 0),
@@ -32,7 +71,7 @@ export default class Game {
       { segments: 16, diameter: 2 },
       this.scene
     );
-    sphere.position.y = 0;
+    sphere.position.y = 1;
 
     BABYLON.MeshBuilder.CreateGround(
       "ground",
@@ -62,8 +101,7 @@ export default class Game {
       }
     );
 
-    const mainTexture = new BABYLON.Texture(img, this.scene);
-    shaderMaterial.setTexture("textureSampler", mainTexture);
+    shaderMaterial.setTexture("textureSampler", this.mainTexture);
     shaderMaterial.setFloat("time", 0);
     shaderMaterial.setVector3("cameraPosition", BABYLON.Vector3.Zero());
     sphere.material = shaderMaterial;
@@ -74,7 +112,10 @@ export default class Game {
       const shaderMaterial = this.scene.getMaterialByName("shader");
       shaderMaterial.setFloat("time", this.time);
       this.time += 0.02;
-
+      // this.FOH.setRotationMatrixFromCamera(this.camera);
+      console.log(this.FOH);
+      console.log(this.camera);
+      // this.FOH.tempMatrix
       shaderMaterial.setVector3(
         "cameraPosition",
         this.scene.activeCamera.position
