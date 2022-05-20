@@ -7,14 +7,14 @@ varying vec2 vUV;
 
 // Uniforms
 uniform mat4 world;
-
+uniform float time;
 // Refs
 uniform vec3 cameraPosition;
 uniform sampler2D textureSampler;
 
 void main(void) {
-    vec3 vLightPosition = vec3(1,100,1);
-
+    vec3 vLightPosition = vec3(0,20,10);
+    vec2 uv = vUV;
     // World values
     vec3 vPositionW = vec3(world * vec4(vPosition, 1.0));
     vec3 vNormalW = normalize(vec3(world * vec4(vNormal, 0.0)));
@@ -31,6 +31,8 @@ void main(void) {
     vec3 angleW = normalize(viewDirectionW + lightVectorW);
     float specComp = max(0., dot(vNormalW, angleW));
     specComp = pow(specComp, max(1., 64.)) * 2.;
-
-    gl_FragColor = vec4(color*vNormal * ndl + vec3(specComp), 1.);
+    uv = vec2(specComp, ndl);
+    uv *= 2.;
+    //gl_FragColor = vec4((color*sin(vUV.xyx+time)*2.+1.*(1.)) * ndl + vec3(specComp), 1.);
+    gl_FragColor = vec4(sin(vNormal*20.), 1.);
 }
