@@ -3,15 +3,17 @@ import * as THREE from "three";
 import "babylonjs-loaders";
 // import Omnitone from "../build/omnitone.min.esm";
 import img from "./../assets/textures/amiga.jpg";
-// import dirt from "./../assets/textures/dirt.jpg";
+import dirt from "./../assets/textures/dirt.jpg";
 //import wav from "./../assets/road_break_feedback000.mp3";
 import THREEDwav from "./../assets/3DWAV.wav";
 import vertShader from "./../shaders/shader.vert";
 import fragShader from "./../shaders/shader.frag";
-console.log(img);
+// console.log(dirt);
 
 export default class Game {
   constructor(canvasId) {
+    this.spheres = [];
+    this.numSpheres = 3;
     this.lastMatrixUpdate = 0;
     this.updateAngles = (xAngle, yAngle, zAngle, camera) => {
       let deg2rad = Math.PI / 180;
@@ -21,11 +23,12 @@ export default class Game {
         zAngle * deg2rad,
         "YXZ"
       );
-      let matrix = new THREE.Matrix4().makeRotationFromEuler(euler);
-      console.log(camera);
+      console.log(euler);
+      // let matrix = new THREE.Matrix4().makeRotationFromEuler(euler);
+      // console.log(camera);
 
-      // if (Date.now() - this.lastMatrixUpdate > 100) {
-      this.FOH.setListenerFromMatrix(camera._camMatrix);
+      // // if (Date.now() - this.lastMatrixUpdate > 100) {
+      // this.FOH.setListenerFromMatrix(camera._camMatrix);
       // }
     };
     this.canvas = document.getElementById(canvasId);
@@ -45,7 +48,9 @@ export default class Game {
     });
     this.ROH = Omnitone.createFOARotator(this.audioCtx);
     console.log(this.ROH);
-    this.mainTexture = new BABYLON.Texture(img, this.scene);
+    //this.mainTexture = new BABYLON.Texture(img, this.scene);
+    this.mainTexture = new THREE.TextureLoader().load(dirt);
+    //this.mainTexture2 = new BABYLON.Texture(img, this.scene);
   }
 
   createScene() {
@@ -85,23 +90,6 @@ export default class Game {
       new BABYLON.Vector3(0, 1, 0),
       this.scene
     );
-
-    let sphere = BABYLON.MeshBuilder.CreateSphere(
-      "sphere",
-      { segments: 16, diameter: 2 },
-      this.scene
-    );
-    sphere.position.y = 1;
-
-    BABYLON.MeshBuilder.CreateGround(
-      "ground",
-      { width: 6, height: 6, subdivisions: 2 },
-      this.scene
-    );
-
-    BABYLON.Effect.ShadersStore["customVertexShader"] = vertShader;
-    BABYLON.Effect.ShadersStore["customFragmentShader"] = fragShader;
-
     const shaderMaterial = new BABYLON.ShaderMaterial(
       "shader",
       this.scene,
@@ -120,19 +108,80 @@ export default class Game {
         ],
       }
     );
+    var noiseTexture = new BABYLON.NoiseProceduralTexture(
+      "perlin",
+      15,
+      this.scene
+    );
+    noiseTexture.octaves = 10;
+    // Create a particle system
+    const particleSystem = new BABYLON.ParticleSystem("particles", 20000);
 
-    shaderMaterial.setTexture("textureSampler", this.mainTexture);
+    //Texture of each particle
+    particleSystem.particleTexture = new BABYLON.Texture(
+      "/src/assets/textures/dirt.jpg",
+      this.scene
+    );
+
+    // Position where the particles are emiited from
+    particleSystem.emitter = new BABYLON.Vector3(0, 2, 0);
+
+    particleSystem.start();
+
+    shaderMaterial.setTexture("textureSampler", noiseTexture);
     shaderMaterial.setFloat("time", 0);
     shaderMaterial.setVector3("cameraPosition", BABYLON.Vector3.Zero());
-    sphere.material = shaderMaterial;
+
+    for (let i = -this.numSpheres / 2; i < this.numSpheres; i++) {
+      this.spheres[i] = BABYLON.MeshBuilder.CreateSphere(
+        "sphere",
+        { segments: 16, diameter: 2 },
+        this.scene
+      );
+      console.log(this.spheres[i]);
+      this.spheres[i].material = shaderMaterial;
+      this.spheres[i].position.z = Math.sin(i);
+      this.spheres[i].position.y = 1;
+    }
+    // const makeSpheres = () => {
+    //
+    //   for (let i in this.numSpheres) {
+    //     spheres[i] = BABYLON.MeshBuilder.CreateSphere(
+    //       "sphere",
+    //       { segments: 16, diameter: 2 },
+    //       this.scene
+    //     );
+    //     spheres[i].position.y = 1;
+    //     spheres[i].position.x = i;
+    //     spheres[i].material = shaderMaterial;
+    //     console.log(spheres[i]);
+    //   }
+    // };
+    // makeSpheres();
+    BABYLON.MeshBuilder.CreateGround(
+      "ground",
+      { width: 6, height: 6, subdivisions: 2 },
+      this.scene
+    );
+
+    BABYLON.Effect.ShadersStore["customVertexShader"] = vertShader;
+    BABYLON.Effect.ShadersStore["customFragmentShader"] = fragShader;
   }
 
   doRender() {
     this.engine.runRenderLoop(() => {
       const shaderMaterial = this.scene.getMaterialByName("shader");
       const camera = this.scene.getCameraByName("camera1");
+      // const sphere = this.scene.getMeshByName("sphere");
+
       shaderMaterial.setFloat("time", this.time);
+
       this.time += 0.02;
+      let idx;
+      for (let i = -this.spheres.length / 2; i < this.spheres.length; i++) {
+        this.spheres[idx].position.y = 5 * Math.sin(i + this.time * idx * 100);
+        idx++;
+      }
       // this.FOH.setRotationMatrixFromCamera(this.camera);
       // console.log(this.ROH);
       // console.log(this.FOH);
