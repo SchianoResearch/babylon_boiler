@@ -43,6 +43,8 @@
     "webpack-livereload-plugin": "^2.1.1"
   },
   "dependencies": {
+    "@babylonjs/core": "^5.8.0",
+    "@babylonjs/post-processes": "^5.8.0",
     "babylonjs": "^4.0.2",
     "babylonjs-gui": "^5.7.0",
     "babylonjs-loaders": "^4.0.2",
