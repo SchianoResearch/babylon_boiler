@@ -1,6 +1,6 @@
 # Babylon.js boilerplate with Omnitone for Foa Ambisonic Renderer
 
-Support, live GLSL shader reload, ES6, babel, eslint,dev live reload server, prod compression, First order Ambisionics (so far)
+Support, live GLSL shader reload, ES6, babel, eslint,dev live reload server, prod compression, First order Ambisionics (so far)...
 
 ## Usage
 
@@ -19,3 +19,7 @@ Run `npm install`
 # if you have errors ...
 
 - `npm install -g win-node-env` to install node env
+
+# need help...
+
+- copying rotation from camera to ambisonic listener position I am attempting to copy the camera matrix to the listener matrix but am having an issue with type mismatch
